@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Chronomètre — v2 · 01 Post</title>
+<link rel="stylesheet" href="font-riso.css">
+<link rel="stylesheet" href="board.css">
+<link rel="stylesheet" href="riso.css">
+<style>
+/* Page « Post »: the poster as it sits in the feed — fresh, or already run today. */
+.body { position: absolute; left: 30px; top: 92px; }
+.pnum { font-size: 226px; height: 196px; margin: 6px 0 0 -8px; }
+.pnum .p { transform: translate(7px, 5px); }
+.fin { transform-box: view-box; transform-origin: 540px 252px; transform: rotate(calc(var(--t) * 360deg)); }
+.you { transform-box: view-box; transform-origin: 540px 252px; transform: rotate(calc(var(--r) * 360deg)); opacity: 0; }
+.g[data-state="result"] .you { opacity: 1; }
+.stamp { margin-top: 2px; }
+.clock { font-size: 15px; letter-spacing: .1em; }
+.g .res { display: none; }
+.g[data-state="result"] .rdy { display: none; }
+.g[data-state="result"] .res { display: inline; }
+.g[data-state="result"] .stamp.res { display: inline-block; }
+</style>
+</head>
+<body>
+<header class="bd-head">
+  <div class="bd-title">Chronomètre · v2 · Riso<b>01 — Post</b></div>
+  <div class="bd-states"><em>Page « Post » · the poster in the feed, after you ran today's heat</em></div>
+</header>
+<section class="bd-stage"><div class="bd-scale" data-mount="d" data-lock="result"></div></section>
+
+<section class="bd-sec"><h2>Two faces of the same post in the feed</h2>
+  <div class="bd-row">
+    <figure><div class="bd-mini" data-mount="s" data-lock="ready"></div><figcaption>Fresh — you haven't run today: the heat poster, finish line printed, sticker GO</figcaption></figure>
+    <figure><div class="bd-mini" data-mount="s" data-lock="result"></div><figcaption>Already run — your stamp and your pink mark stay on the poster, countdown to the next heat</figcaption></figure>
+  </div>
+</section>
+<section class="bd-notes">
+  <div><h3>Role</h3>
+    <p><b>Stop the scroll and say today's target in one second.</b> In a grey feed, the paper poster with two inks is the only printed object. The number is the headline; the finish line on the lanes is the promise.</p>
+    <p>Once you have run, the post doesn't reset: it keeps your print, so scrolling past it tomorrow morning reminds you of yesterday's heat.</p></div>
+  <div><h3>Style — strict continuity</h3>
+    <p>Same masthead, same 226 px misregistered number, same lanes and halftone disc, same perforated stub and single sticker as « Jeu ». Pink = you, blue = the race.</p></div>
+  <div><h3>Question for you</h3>
+    <p>In Devvit the post <i>is</i> the game, so « Post » fresh = « Jeu » ready. I'd merge them and keep this page only for the "already run" face. OK?</p></div>
+</section>
+
+<template id="game">
+  <div class="g" data-scale="10">
+    <div class="fibre"></div>
+    <svg class="scene" viewBox="0 0 740 512" aria-hidden="true">
+      <g class="disc ink" fill="#ff48b0" data-cx="540" data-cy="252" data-r="114"></g>
+      <g class="ink" fill="none" stroke="#0078bf" stroke-width="2.5" transform="translate(-6 4)">
+        <circle cx="540" cy="252" r="130"/><circle cx="540" cy="252" r="148"/><circle cx="540" cy="252" r="166"/>
+      </g>
+      <g class="ink" fill="#0078bf" font-family="Ubuntu Sans X, sans-serif" font-weight="900" font-size="12" transform="translate(-6 4)">
+        <text x="397" y="256">1</text><text x="379" y="256">2</text>
+      </g>
+      <g class="fin ink"><rect x="536" y="80" width="8" height="48" fill="#0078bf"/><text x="552" y="96" font-family="Ubuntu Sans X, sans-serif" font-weight="900" font-size="11" letter-spacing="2" fill="#0078bf">FINISH</text></g>
+      <g class="you ink"><rect x="537" y="74" width="6" height="60" fill="#ff48b0"/></g>
+    </svg>
+    <div class="head"><b>CHRONOMÈTRE</b><span>HEAT Nº<span data-k="n"></span></span><i data-k="date"></i></div>
+    <div class="body">
+      <div class="lead"><span class="rdy">STOP THE CLOCK AT</span><span class="res">YOU RAN THIS HEAT IN</span></div>
+      <div class="pnum"><span class="b"><span class="rdy" data-k="target"></span><span class="res" data-k="result"></span></span><span class="p"><span class="rdy" data-k="target"></span><span class="res" data-k="result"></span></span></div>
+      <div class="lbl rdy">SECONDS · NO CLOCK · ONE TRY</div>
+      <span class="stamp res"><span data-k="gap"></span> S <span data-k="gap-word" style="text-transform:uppercase"></span></span>
+    </div>
+    <div class="stub"><span class="rdy"><span data-k="players"></span> RAN TODAY</span><span class="rdy"><em>ONE TRY EACH</em></span>
+      <span class="res">NEXT HEAT IN</span><span class="res clock">07:42:10</span><span class="res"><em>CLOSER THAN <span data-k="closer"></span></em></span></div>
+    <button class="go" data-go><span class="rdy">GO</span><span class="res">CARD</span></button>
+  </div>
+</template>
+<script src="riso.js"></script>
+<script src="board.js"></script>
+</body>
+</html>

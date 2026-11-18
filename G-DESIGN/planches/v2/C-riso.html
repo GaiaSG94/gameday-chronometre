@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Chronomètre — v2 · C Riso</title>
+<link rel="stylesheet" href="font-riso.css">
+<link rel="stylesheet" href="board.css">
+<link rel="stylesheet" href="riso.css">
+<style>
+/* ===== C · Riso — a two-ink race-day poster, printed fresh every day ===== */
+.g { --pink: #ff48b0; --blue: #0078bf; --paper: #f1ece0;
+  position: absolute; inset: 0; overflow: hidden; user-select: none; background: var(--paper); color: var(--blue);
+  font-family: "Ubuntu Sans X", "Liberation Sans", sans-serif; font-stretch: 75%; font-variant-numeric: lining-nums tabular-nums; }
+.g svg.scene { position: absolute; inset: 0; width: 740px; height: 512px; display: block; }
+.ink { mix-blend-mode: multiply; }
+.ring, .disc { transition: opacity .5s; }
+.fin { transform-box: view-box; transform-origin: 540px 252px; transform: rotate(calc(var(--t) * 360deg)); }
+.you { transform-box: view-box; transform-origin: 540px 252px; transform: rotate(calc(var(--r) * 360deg)); opacity: 0; }
+.g[data-state="result"] .you { opacity: 1; }
+.marks { opacity: 0; transition: opacity .4s; }
+.g[data-state="running"] .marks { opacity: 1; }
+.g[data-state="running"] .disc, .g[data-state="running"] .ring, .g[data-state="running"] .fin { opacity: 0; }
+
+.head { position: absolute; left: 30px; right: 30px; top: 22px; display: flex; align-items: baseline; gap: 14px;
+  padding-bottom: 10px; border-bottom: 2px solid var(--blue); }
+.head b { font-size: 34px; font-weight: 900; letter-spacing: .01em; line-height: 1; }
+.head span { font-size: 13px; font-weight: 800; letter-spacing: .14em; color: var(--pink); mix-blend-mode: multiply; }
+.head i { margin-left: auto; font-style: normal; text-transform: uppercase; font-size: 13px; font-weight: 800; letter-spacing: .14em; }
+.body { position: absolute; left: 30px; top: 92px; transition: opacity .3s; }
+.lead { font-size: 18px; font-weight: 900; letter-spacing: .14em; color: var(--pink); mix-blend-mode: multiply; }
+.num { position: relative; font-size: 226px; font-weight: 900; line-height: .84; letter-spacing: -.035em; margin: 6px 0 0 -8px; height: 196px; }
+.num .b, .num .p { position: absolute; left: 0; top: 0; white-space: nowrap; mix-blend-mode: multiply; filter: url(#rs-ink); }
+.num .b { color: var(--blue); }
+.num .p { color: var(--pink); transform: translate(7px, 5px) rotate(.35deg); }
+.sub { font-size: 14px; font-weight: 800; letter-spacing: .16em; margin-top: 4px; }
+.stamp { display: inline-block; margin-top: 10px; padding: 6px 12px 4px; border: 3px solid var(--pink); color: var(--pink); transform: rotate(-5deg);
+  font-size: 26px; font-weight: 900; letter-spacing: .06em; mix-blend-mode: multiply; filter: url(#rs-ink); }
+.count { position: absolute; left: 0; right: 0; top: 300px; text-align: center; font-size: 15px; font-weight: 900; letter-spacing: .3em; opacity: 0; transition: opacity .6s .2s; }
+.g[data-state="running"] .count { opacity: 1; }
+.g[data-state="running"] .body, .g[data-state="running"] .head, .g[data-state="running"] .stub { opacity: 0; }
+.head, .stub { transition: opacity .4s; }
+
+.stub { position: absolute; left: 0; right: 0; bottom: 0; height: 58px; border-top: 2px dashed var(--blue);
+  display: flex; align-items: center; gap: 22px; padding: 0 150px 0 30px; font-size: 12.5px; font-weight: 800; letter-spacing: .14em; }
+.stub em { font-style: normal; color: var(--pink); mix-blend-mode: multiply; }
+.go { position: absolute; right: 30px; bottom: 22px; width: 104px; height: 104px; border-radius: 50%; background: var(--blue); color: var(--paper);
+  font-size: 26px; font-weight: 900; letter-spacing: .08em; transform: rotate(-8deg);
+  box-shadow: 0 0 0 5px #fbf8f1, 0 6px 14px -4px rgba(0,40,80,.45); transition: transform .12s, background .3s; }
+.go:active { transform: rotate(-8deg) scale(.95); }
+.g[data-state="running"] .go { background: var(--pink); }
+
+.g .res, .g .run { display: none; }
+.g[data-state="running"] .rdy { display: none; }
+.g[data-state="running"] .run { display: inline; }
+.g[data-state="result"] .rdy { display: none; }
+.g[data-state="result"] .res { display: inline; }
+.g[data-state="result"] .stamp.res { display: inline-block; }
+</style>
+</head>
+<body>
+<header class="bd-head">
+  <div class="bd-title">Chronomètre · v2 · « Jeu »<b>C — Riso</b></div>
+  <div class="bd-states"><button data-state="ready">Ready</button><button data-state="running">Measuring</button><button data-state="result">Result</button>
+    <em>or play: GO, count, STOP</em></div>
+</header>
+<section class="bd-stage"><div class="bd-scale" data-mount="d"></div></section>
+
+<section class="bd-sec"><h2>The three states</h2>
+  <div class="bd-row">
+    <figure><div class="bd-mini" data-mount="s" data-lock="ready"></div><figcaption>1 · Ready — today's heat poster, finish line printed on the lanes</figcaption></figure>
+    <figure><div class="bd-mini" data-mount="s" data-lock="running"></div><figcaption>2 · Measuring — blank paper, only the printer's marks: no clock</figcaption></figure>
+    <figure><div class="bd-mini" data-mount="s" data-lock="result"></div><figcaption>3 · Result — stamped, your pink mark before or after the blue finish</figcaption></figure>
+  </div>
+</section>
+<section class="bd-notes">
+  <div><h3>World</h3>
+    <p><b>Every day a new race poster comes off the press.</b> Two inks, pink and blue, never quite aligned; where they overlap they turn violet. The heat number, the finish line on the lanes, a sticker to hit.</p>
+    <p>While you count, the poster goes back to blank paper with only the printer's marks. Then your time is stamped on it — a print you'd want to share.</p></div>
+  <div><h3>Matter &amp; colour — two inks</h3><div class="sw">
+    <i style="background:#f1ece0">f1ece0 paper</i><i style="background:#ff48b0">ff48b0 pink</i><i style="background:#0078bf;color:#fff">0078bf blue</i>
+    <i style="background:#7a3f98;color:#fff">overprint</i></div>
+    <p style="margin-top:12px">Real halftone (dot size, not opacity), misregistration of 7 × 5 px, speckled ink, paper fibre. Only two colours exist; the third is their overlap.</p></div>
+  <div><h3>Type</h3>
+    <p style="font:900 56px/1 'Ubuntu Sans X',sans-serif;font-stretch:75%;color:#0078bf;letter-spacing:-.03em">7.30</p>
+    <p>Ubuntu Sans (Ubuntu Font Licence) at width 75, weight 900 only, wide-tracked caps. One family, one weight. Embedded, subset.</p></div>
+</section>
+
+<template id="game">
+  <div class="g" data-scale="10">
+    <div class="fibre"></div>
+    <svg class="scene" viewBox="0 0 740 512" aria-hidden="true">
+      <!-- pink halftone disc (dots generated below) -->
+      <g class="disc ink" fill="#ff48b0"></g>
+      <!-- blue lanes, misregistered against the pink -->
+      <g class="ring ink" fill="none" stroke="#0078bf" stroke-width="2.5" transform="translate(-6 4)">
+        <circle cx="540" cy="252" r="130"/><circle cx="540" cy="252" r="148"/><circle cx="540" cy="252" r="166"/>
+      </g>
+      <g class="ring ink" fill="#0078bf" font-family="Ubuntu Sans X, sans-serif" font-weight="900" font-size="12" transform="translate(-6 4)">
+        <text x="397" y="256">1</text><text x="379" y="256">2</text>
+      </g>
+      <!-- finish line (blue) and your mark (pink) -->
+      <g class="fin ink"><rect x="536" y="80" width="8" height="48" fill="#0078bf"/><text x="552" y="96" font-family="Ubuntu Sans X, sans-serif" font-weight="900" font-size="11" letter-spacing="2" fill="#0078bf">FINISH</text></g>
+      <g class="you ink"><rect x="537" y="74" width="6" height="60" fill="#ff48b0"/></g>
+      <!-- printer's marks, only while measuring -->
+      <g class="marks ink" fill="none" stroke-width="1.5">
+        <g stroke="#0078bf"><circle cx="370" cy="236" r="22"/><path d="M370 200v72M334 236h72"/>
+          <path d="M18 40h28M40 18v28M722 40h-28M700 18v28M18 472h28M40 494v-28M722 472h-28M700 494v-28"/></g>
+        <g stroke="#ff48b0" transform="translate(5 -3)"><circle cx="370" cy="236" r="22"/><path d="M370 200v72M334 236h72"/></g>
+      </g>
+    </svg>
+
+    <div class="head"><b>CHRONOMÈTRE</b><span>HEAT Nº<span data-k="n"></span></span><i data-k="date"></i></div>
+    <div class="body">
+      <div class="lead"><span class="rdy">STOP THE CLOCK AT</span><span class="res">YOU STOPPED AT</span></div>
+      <div class="num"><span class="b"><span class="rdy" data-k="target"></span><span class="res" data-k="result"></span></span><span class="p"><span class="rdy" data-k="target"></span><span class="res" data-k="result"></span></span></div>
+      <div class="sub"><span class="rdy">SECONDS · NO CLOCK · ONE TRY</span></div>
+      <span class="stamp res"><span data-k="gap"></span> S <span data-k="gap-word" style="text-transform:uppercase"></span></span>
+    </div>
+    <div class="count">COUNT IN YOUR HEAD</div>
+    <div class="stub"><span class="rdy"><span data-k="players"></span> RAN TODAY</span><span class="rdy"><em>ONE TRY EACH</em></span>
+      <span class="run">HEAT IN PROGRESS</span>
+      <span class="res">CLOSER THAN <em data-k="closer"></em> OF <span data-k="players"></span></span><span class="res">TARGET <span data-k="target"></span> · MEDIAN <span data-k="median"></span></span></div>
+    <button class="go" data-go><span class="rdy">GO</span><span class="run">STOP</span><span class="res">CARD</span></button>
+  </div>
+</template>
+<script>
+/* Prints a real halftone disc (dot size follows the shading) into the template once. */
+(function () {
+  var g = document.getElementById("game").content.querySelector(".disc"), ns = "http://www.w3.org/2000/svg";
+  var cx = 540, cy = 252, R = 114, step = 8, x, y, d, l, r, el, a = 15 * Math.PI / 180;
+  for (y = -R; y <= R; y += step) {
+    for (x = -R; x <= R; x += step) {
+      d = Math.sqrt(x * x + y * y);
+      if (d > R) continue;
+      l = Math.sqrt(Math.pow(x + 60, 2) + Math.pow(y + 60, 2)) / (R * 1.9);
+      r = Math.max(.5, Math.min(4.4, 4.6 * l + .4));
+      el = document.createElementNS(ns, "circle");
+      el.setAttribute("cx", String(cx + x * Math.cos(a) - y * Math.sin(a)));
+      el.setAttribute("cy", String(cy + x * Math.sin(a) + y * Math.cos(a)));
+      el.setAttribute("r", r.toFixed(2));
+      g.appendChild(el);
+    }
+  }
+})();
+</script>
+<script src="riso.js"></script>
+<script src="board.js"></script>
+</body>
+</html>

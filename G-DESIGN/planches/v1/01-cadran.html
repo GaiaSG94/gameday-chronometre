@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Chronomètre — v1 · 01 Cadran</title>
+<link rel="stylesheet" href="board.css">
+<style>
+/* ===== Direction 01 · Cadran — off-white silence, one hairline dial, one black action ===== */
+.g {
+  --paper: #f4f4f2; --ink: #111214; --grey: #8b8c8f; --line: #c9c9c6; --accent: #e4572e;
+  container-type: size; position: absolute; inset: 0; background: var(--paper); color: var(--ink);
+  font-family: Inter, "Helvetica Neue", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  font-variant-numeric: tabular-nums; overflow: hidden; user-select: none;
+}
+.g-top { position: absolute; top: 4.5cqh; left: 5cqw; right: 5cqw; display: flex; justify-content: space-between;
+  font-size: max(11px, 2.4cqmin); letter-spacing: .02em; color: var(--grey); }
+.g-top b { color: var(--ink); font-weight: 500; }
+
+/* dial */
+.dial { position: absolute; left: 50%; top: 44%; width: 74cqmin; height: 74cqmin; transform: translate(-50%, -50%); }
+.dial svg { width: 100%; height: 100%; overflow: visible; }
+.ring { fill: none; stroke: var(--line); stroke-width: .28; }
+.tick { stroke-width: .7; stroke-linecap: round; transition: opacity .4s; }
+.tick.t { stroke: var(--accent); }
+.tick.r { stroke: var(--ink); opacity: 0; }
+.arc { fill: none; stroke: var(--accent); stroke-width: .7; opacity: 0; transition: opacity .6s .15s; }
+
+.read { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.lbl { font-size: max(11px, 2.4cqmin); color: var(--grey); letter-spacing: .02em; height: 1.6em; }
+.num { font-size: 23cqmin; font-weight: 500; letter-spacing: -.065em; line-height: .9; margin-right: .06em;
+  transition: opacity .35s, filter .35s; }
+.num small { font-size: .26em; letter-spacing: 0; font-weight: 400; color: var(--grey); margin-left: .12em; }
+.sub { font-size: max(12px, 2.7cqmin); height: 1.6em; margin-top: 1.4cqmin; color: var(--accent); }
+
+/* the single action, on a soft white relief */
+.act { position: absolute; left: 50%; bottom: 8.5cqh; transform: translateX(-50%); display: grid; place-items: center; }
+.act::before { content: ""; position: absolute; width: 46cqmin; height: 15cqmin; border-radius: 50%;
+  background: radial-gradient(closest-side, #ffffff 0%, #fbfbfa 55%, rgba(244,244,242,0) 100%);
+  box-shadow: 0 3cqmin 5cqmin -3cqmin rgba(17,18,20,.10); }
+.go { position: relative; min-width: 30cqmin; padding: 3.1cqmin 6cqmin; border-radius: 999px; background: var(--ink);
+  color: var(--paper); font-size: max(14px, 3.1cqmin); font-weight: 500; letter-spacing: -.01em;
+  transition: transform .12s, background .3s; }
+.go:active { transform: scale(.97); }
+.go .s2, .go .s3 { display: none; }
+.foot { position: absolute; bottom: 3.2cqh; left: 0; right: 0; text-align: center; font-size: max(10px, 2.1cqmin); color: var(--grey); }
+
+/* states */
+.g .r-only, .g .run-only { display: none; }
+.g[data-state="running"] .num, .g[data-state="running"] .lbl-ready { opacity: 0; filter: blur(6px); }
+.g[data-state="running"] .run-only { display: block; }
+.g[data-state="running"] .ready-only { display: none; }
+.g[data-state="running"] .go .s1 { display: none; }
+.g[data-state="running"] .go .s2 { display: inline; }
+.g[data-state="running"] .tick.t { opacity: .35; }
+.g[data-state="result"] .ready-only { display: none; }
+.g[data-state="result"] .r-only { display: inline; }
+.g[data-state="result"] .go .s1 { display: none; }
+.g[data-state="result"] .go .s3 { display: inline; }
+.g[data-state="result"] .tick.r, .g[data-state="result"] .arc { opacity: 1; }
+.g[data-state="result"] .num { animation: land .5s cubic-bezier(.2,.8,.2,1); }
+@keyframes land { from { transform: translateY(1.5cqmin); } }
+</style>
+</head>
+<body>
+<header class="bd-head">
+  <div class="bd-title">Chronomètre · Planche v1 · Page « Jeu »<b>01 — Cadran</b></div>
+  <div class="bd-states"><span>State</span>
+    <button data-state="ready">Ready</button><button data-state="running">Measuring</button><button data-state="result">Result</button>
+    <span style="margin-left:14px">or play it: tap Start, count, tap Stop</span></div>
+</header>
+
+<section class="bd-stage">
+  <figure class="bd-fig"><div class="bd-scale desk" data-mount="d"></div><figcaption>Desktop feed · 1440 × 900</figcaption></figure>
+  <figure class="bd-fig"><div class="bd-scale mob" data-mount="m"></div><figcaption>Mobile post · 390 × 844</figcaption></figure>
+</section>
+
+<section class="bd-notes">
+  <div><h3>Idea</h3><p>Silence and precision. One hairline dial, one orange tick for today's second, one black button resting on a soft white relief. While you measure, the number blurs away: the empty dial is the clock.</p></div>
+  <div><h3>Palette — one accent</h3><div class="sw">
+    <i style="background:#f4f4f2">f4f4f2</i><i style="background:#111214;color:#f4f4f2">111214</i>
+    <i style="background:#8b8c8f;color:#fff">8b8c8f</i><i style="background:#e4572e;color:#fff">e4572e</i></div></div>
+  <div><h3>Type</h3><p style="font:500 44px/1 Inter,'Helvetica Neue',Arial,sans-serif;letter-spacing:-.065em;font-variant-numeric:tabular-nums">7.30<span style="font-size:13px;letter-spacing:0;color:#8b8c8f"> s</span></p>
+    <p style="margin-top:10px">Tight neo-grotesk, tracking −6.5 % on the number, tabular figures. System stack, no web font.</p></div>
+</section>
+
+<section class="bd-states-row">
+  <h2>The three states of the main page (mobile)</h2>
+  <div class="bd-row">
+    <figure class="bd-fig"><div class="bd-scale mob" data-mount="m" data-lock="ready"></div><figcaption>1 · Ready</figcaption></figure>
+    <figure class="bd-fig"><div class="bd-scale mob" data-mount="m" data-lock="running"></div><figcaption>2 · Measuring — no clock</figcaption></figure>
+    <figure class="bd-fig"><div class="bd-scale mob" data-mount="m" data-lock="result"></div><figcaption>3 · Result</figcaption></figure>
+  </div>
+</section>
+
+<template id="game">
+  <div class="g">
+    <div class="g-top"><span>N° <b data-k="n"></b></span><span data-k="date"></span></div>
+    <div class="dial">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <circle class="ring" cx="50" cy="50" r="46"/>
+        <circle class="arc" cx="50" cy="50" r="46" data-span/>
+        <line class="tick t" x1="50" y1="1" x2="50" y2="8" data-mark="target"/>
+        <line class="tick r" x1="50" y1="1" x2="50" y2="8" data-mark="result"/>
+      </svg>
+      <div class="read">
+        <div class="lbl"><span class="ready-only lbl-ready">Stop at exactly</span><span class="run-only">Count it in your head.</span><span class="r-only">You stopped at</span></div>
+        <div class="num"><span class="ready-only" data-k="target"></span><span class="run-only" data-k="target"></span><span class="r-only" data-k="result"></span><small>s</small></div>
+        <div class="sub"><span class="r-only"><span data-k="gap"></span> · closer than <span data-k="closer"></span> today</span></div>
+      </div>
+    </div>
+    <div class="act"><button class="go" data-go><span class="s1">Start</span><span class="s2">Stop</span><span class="s3">See your card</span></button></div>
+    <div class="foot"><span class="ready-only"><span data-k="players"></span> measured today · one try</span><span class="run-only">&nbsp;</span><span class="r-only">Target <span data-k="target"></span> s · median today <span data-k="median"></span> s</span></div>
+  </div>
+</template>
+<script src="board.js"></script>
+</body>
+</html>

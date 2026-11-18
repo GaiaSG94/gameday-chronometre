@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Chronomètre — v2 · 04 Séries &amp; classement</title>
+<link rel="stylesheet" href="font-riso.css">
+<link rel="stylesheet" href="board.css">
+<link rel="stylesheet" href="riso.css">
+<style>
+/* Page « Séries & classement »: today's field as a printed histogram, the closest runners, your streak. */
+.field { position: absolute; left: 30px; top: 88px; width: 390px; }
+.field .small { margin-top: 2px; }
+.hist { position: relative; height: 196px; margin-top: 14px; display: flex; align-items: flex-end; gap: 2px; border-bottom: 2px solid var(--blue); }
+.hist i { flex: 0 0 11px; --dot: 2.1px; }
+.hist i.me { --dot: 2.9px; }
+.hist .finish { position: absolute; left: 194px; top: 0; bottom: -8px; border-left: 2px dashed var(--blue); }
+.hist .finish b { position: absolute; top: -2px; left: 6px; font-size: 11px; letter-spacing: .14em; }
+.hist .youtag { position: absolute; left: 112px; top: 6px; text-align: right; width: 72px; font-size: 13px; letter-spacing: .1em; }
+.axis { display: flex; justify-content: space-between; margin-top: 6px; }
+.board-list { position: absolute; left: 450px; right: 30px; top: 88px; }
+.ln { display: flex; align-items: baseline; gap: 12px; padding: 4px 0 3px; border-bottom: 1px solid var(--blue); }
+.ln .rk { width: 30px; font-size: 22px; letter-spacing: -.01em; color: var(--pink); mix-blend-mode: multiply; }
+.ln .nm { flex: 1; font-size: 15px; font-weight: 700; font-stretch: 85%; letter-spacing: .01em; }
+.ln .gp { font-size: 15px; letter-spacing: .04em; }
+.ln.dots { justify-content: center; border-bottom-style: dashed; color: var(--blue); letter-spacing: .5em; font-size: 12px; }
+.ln.me .nm, .ln.me .gp { color: var(--pink); mix-blend-mode: multiply; }
+.ln.me .rk { font-size: 15px; width: 30px; }
+.stub.tall { height: 84px; gap: 18px; }
+.days { display: flex; gap: 5px; }
+.days div { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 9.5px; letter-spacing: .06em; }
+.days i { width: 22px; height: 22px; }
+.days i.miss { background: none; box-shadow: inset 0 0 0 1.5px var(--blue); }
+</style>
+</head>
+<body>
+<header class="bd-head">
+  <div class="bd-title">Chronomètre · v2 · Riso<b>04 — Séries &amp; classement</b></div>
+  <div class="bd-states"><em>Page « Séries & classement » · opened from STANDINGS on the card</em></div>
+</header>
+<section class="bd-stage"><div class="bd-scale" data-mount="d" data-lock="result"></div></section>
+
+<section class="bd-notes" style="padding-top:64px">
+  <div><h3>Role</h3>
+    <p><b>Why you come back tomorrow.</b> The whole field printed as a halftone histogram — where 3,214 people stopped around the blue finish line — with your bar in pink. The five closest runners of the day, then you. And your streak as a row of printed days.</p>
+    <p>The histogram is the conversation starter: today's field leaned early, everyone can see it.</p></div>
+  <div><h3>Style — strict continuity</h3>
+    <p>Bars are real halftone in blue; your bar overprints pink. Finish line = the same dashed blue as the stub perforation. Ranks in pink only for the top and for you. Streak tiles: dot size = how close you were that day; outlined tile = missed day.</p></div>
+  <div><h3>Demo data</h3>
+    <p>Field drawn from a normal curve centred on the median (6.84 s, i.e. 0.46 s early). User names and ranks are placeholders. You: rank 836 of 3,214 (closer than 74 %).</p></div>
+</section>
+
+<template id="game">
+  <div class="g" data-scale="10">
+    <div class="fibre"></div>
+    <div class="head"><b>CHRONOMÈTRE</b><span>HEAT Nº<span data-k="n"></span> · STANDINGS</span><i data-k="date"></i></div>
+
+    <div class="field">
+      <div class="lead">TODAY'S FIELD</div>
+      <div class="small"><span data-k="players"></span> RUNNERS · WHERE EVERYONE STOPPED</div>
+      <div class="hist"><span class="finish"><b>FINISH</b></span><span class="youtag pk">YOU −<span data-k="gap"></span></span></div>
+      <div class="axis small"><span>1.5 S EARLY</span><span>ON TIME</span><span>1.5 S LATE</span></div>
+    </div>
+
+    <div class="board-list">
+      <div class="lead" style="margin-bottom:4px">CLOSEST TODAY</div>
+      <div class="ln"><span class="rk">1</span><span class="nm">u/quietpulse</span><span class="gp">±0.00</span></div>
+      <div class="ln"><span class="rk">2</span><span class="nm">u/mothlamp</span><span class="gp">+0.01</span></div>
+      <div class="ln"><span class="rk">3</span><span class="nm">u/basso_continuo</span><span class="gp">−0.02</span></div>
+      <div class="ln"><span class="rk">4</span><span class="nm">u/tallyho</span><span class="gp">+0.03</span></div>
+      <div class="ln"><span class="rk">5</span><span class="nm">u/slowclap</span><span class="gp">−0.03</span></div>
+      <div class="ln dots">···</div>
+      <div class="ln me"><span class="rk">836</span><span class="nm">YOU</span><span class="gp">−<span data-k="gap"></span></span></div>
+    </div>
+
+    <div class="stub tall">
+      <div><div class="lbl">YOUR STREAK</div><div class="lbl pk" style="margin-top:4px">12 DAYS IN A ROW</div></div>
+      <div class="days"></div>
+    </div>
+    <button class="go" data-go>CARD<small>BACK</small></button>
+  </div>
+</template>
+<script>
+/* Prints the demo histogram (30 bins of 0.1 s) and the 14-day streak row into the template once. */
+(function () {
+  var c = document.getElementById("game").content, hist = c.querySelector(".hist"), days = c.querySelector(".days"), i, b, h, el, d;
+  for (i = 0; i < 30; i++) {
+    b = -1.45 + i * 0.1;
+    h = Math.max(3, Math.round(176 * Math.exp(-Math.pow(b + 0.46, 2) / (2 * 0.55 * 0.55))));
+    el = document.createElement("i");
+    el.className = i === 13 ? "ht pkd me" : "ht";
+    el.style.height = h + "px";
+    hist.appendChild(el);
+  }
+  var letters = "WTFSSMTWTFSSMTW".slice(1).split(""), close = [.9, 0, 1.3, 2.4, 1.6, 2.9, 2.2, 1.1, 2.6, 1.8, 2.0, 2.7, 1.4, 2.3];
+  for (i = 0; i < 14; i++) {
+    d = document.createElement("div");
+    el = document.createElement("i");
+    el.className = i === 1 ? "ht miss" : "ht pkd";
+    el.style.setProperty("--dot", close[i] + "px");
+    d.appendChild(el);
+    d.appendChild(document.createTextNode(letters[i]));
+    days.appendChild(d);
+  }
+})();
+</script>
+<script src="riso.js"></script>
+<script src="board.js"></script>
+</body>
+</html>
