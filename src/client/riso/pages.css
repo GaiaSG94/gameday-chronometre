@@ -1,0 +1,56 @@
+/* Page layouts — same values as the locked boards (01-post, C-riso, 03-carte-de-fin, 04-series-classement). */
+
+/* ---------- Jeu / Post: the heat poster ---------- */
+.g .body { position: absolute; left: 30px; top: 92px; transition: opacity .3s; }
+.g .pnum.big { font-size: 226px; height: 196px; margin: 6px 0 0 -8px; }
+.g .pnum.big .p { transform: translate(7px, 5px) rotate(.35deg); }
+.g .sub { font-size: 14px; letter-spacing: .16em; margin-top: 4px; }
+.g .body .stamp { margin-top: 2px; }
+.g .count { position: absolute; left: 0; right: 0; top: 300px; text-align: center; font-size: 15px; letter-spacing: .3em; }
+.g .clock { font-size: 15px; letter-spacing: .1em; }
+.g .head, .g .stub { transition: opacity .4s; }
+.g[data-state='running'] .body, .g[data-state='running'] .head, .g[data-state='running'] .stub { opacity: 0; }
+
+/* ---------- Carte de fin ---------- */
+.g .card-left { position: absolute; left: 30px; top: 90px; width: 370px; }
+.g .card-left .pnum { margin-top: 6px; }
+.g .tgt { margin-top: 8px; }
+.g .card-left .stamp { margin-top: 14px; }
+.g .quote { margin-top: 22px; padding-top: 12px; border-top: 2px solid var(--blue); }
+.g .quote q { display: block; margin-top: 6px; font-size: 19px; font-weight: 800; letter-spacing: .01em; line-height: 1.2;
+  color: var(--pink); mix-blend-mode: multiply; quotes: '\201C' '\201D'; }
+.g .rcol { position: absolute; left: 430px; right: 30px; top: 90px; }
+.g .blk { padding: 10px 0 14px; border-bottom: 2px solid var(--blue); }
+.g .blk + .blk { margin-top: 10px; }
+.g .row { display: flex; align-items: baseline; gap: 12px; margin-top: 4px; }
+.g .tally { display: flex; gap: 5px; margin-top: 10px; }
+.g .tally i { width: 15px; height: 15px; }
+.g .tally i.pkd { background: var(--pink); filter: url(#rs-ink); }
+.g .tally i.miss { background: none; box-shadow: inset 0 0 0 1.5px var(--blue); }
+.g .link { font: inherit; letter-spacing: inherit; color: var(--pink); mix-blend-mode: multiply; text-decoration: none; }
+
+/* ---------- Séries & classement ---------- */
+.g .field { position: absolute; left: 30px; top: 88px; width: 390px; }
+.g .field .small { margin-top: 2px; }
+.g .hist { position: relative; height: 196px; margin-top: 14px; display: flex; align-items: flex-end; gap: 2px;
+  border-bottom: 2px solid var(--blue); }
+.g .hist i { flex: 0 0 11px; --dot: 2.1px; }
+.g .hist i.me { --dot: 2.9px; }
+.g .hist .finish { position: absolute; left: 194px; top: 0; bottom: -8px; border-left: 2px dashed var(--blue); }
+.g .hist .finish b { position: absolute; top: -2px; left: 6px; font-size: 11px; letter-spacing: .14em; }
+.g .hist .youtag { position: absolute; top: 6px; width: 90px; margin-left: -96px; text-align: right; font-size: 13px; letter-spacing: .1em; }
+.g .axis { display: flex; justify-content: space-between; margin-top: 6px; }
+.g .board-list { position: absolute; left: 450px; right: 30px; top: 88px; }
+.g .ln { display: flex; align-items: baseline; gap: 12px; padding: 4px 0 3px; border-bottom: 1px solid var(--blue); }
+.g .ln .rk { width: 30px; font-size: 22px; letter-spacing: -.01em; color: var(--pink); mix-blend-mode: multiply; }
+.g .ln .nm { flex: 1; font-size: 15px; font-weight: 700; font-stretch: 85%; letter-spacing: .01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.g .ln .gp { font-size: 15px; letter-spacing: .04em; }
+.g .ln.dots { justify-content: center; border-bottom-style: dashed; letter-spacing: .5em; font-size: 12px; }
+.g .ln.me .nm, .g .ln.me .gp { color: var(--pink); mix-blend-mode: multiply; }
+.g .ln.me .rk { font-size: 15px; }
+.g .empty { font-size: 13px; letter-spacing: .14em; margin-top: 12px; }
+.g .stub.tall { height: 84px; gap: 18px; }
+.g .days { display: flex; gap: 5px; }
+.g .days div { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 9.5px; letter-spacing: .06em; }
+.g .days i { width: 22px; height: 22px; }
+.g .days i.miss { background: none; box-shadow: inset 0 0 0 1.5px var(--blue); filter: none; }
