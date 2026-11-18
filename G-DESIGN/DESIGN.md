@@ -8,7 +8,21 @@
 `planches/v2/01-post.html`, `C-riso.html` (Jeu), `03-carte-de-fin.html`, `04-series-classement.html`.
 End of explorations: changes only as numbered deltas. Next step: `prompts/07b-impl-design.md` (implementation in the Devvit app).
 
-### 07b — mapping and proposed order (waiting for Gaia's validation)
+### 07b — Revue d'implémentation (2026-11-18)
+
+Order validated by Gaia (« Oui, go »). Implemented on branch `feat/chronometre-game`, one commit per screen.
+Proof: product built (`npm run build`), served by a local harness that fakes the Devvit API with the demo data, captured at 740 × 512 @2x, side by side with the locked boards in `G-DESIGN/revue/`.
+
+| Page | Comparison | Remaining gap and reason |
+|------|-----------|--------------------------|
+| Post | `revue/01-post.png` | none visible; countdown is live |
+| Jeu | `revue/02-jeu.png`, states `revue/02-jeu-etats.png` | **finish line pinned** at the board position (7.30 s on a 10 s lap) for every target, your mark placed by your gap (1 s = 36°). Reason: the target changes daily (3–12 s); mapping it to an angle would move the finish under the sticker on most days |
+| Carte de fin | `revue/03-carte-de-fin.png` | none visible |
+| Séries & classement | `revue/04-series-classement.png` | none visible; histogram heights are normalised to the day's tallest bin |
+
+Not yet verified on Reddit itself (needs `devvit login` + playtest on the test subreddit, human step): SVG filter cost inside the Reddit iframe, comment posting as the user, daily cron.
+
+### 07b — mapping and order (validated)
 
 | Page (PAGES.md) | Board | Devvit | Data |
 |-----------------|-------|--------|------|
