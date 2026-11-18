@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Chronomètre — v1 · 03 Instrument</title>
+<link rel="stylesheet" href="board.css">
+<style>
+/* ===== Direction 03 · Instrument — a measurement sheet: paper, ink, a fixed ruler, one cobalt mark ===== */
+.g {
+  --paper: #ebe6da; --ink: #1d2230; --grey: #7a776f; --rule: rgba(29,34,48,.22); --accent: #2b44d6;
+  container-type: size; position: absolute; inset: 0; background: var(--paper); color: var(--ink);
+  font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-variant-numeric: tabular-nums; overflow: hidden; user-select: none;
+  display: flex; flex-direction: column; padding: 3.2% 5% 3.6%;
+}
+.hd { display: grid; grid-template-columns: 1fr auto auto; gap: 4cqw; padding-bottom: 1.4cqh; border-bottom: 1.5px solid var(--ink);
+  font-size: max(10px, 2.1cqmin); letter-spacing: .08em; text-transform: uppercase; }
+.hd span:not(:first-child) { color: var(--grey); }
+.lab { margin-top: 3.4cqh; font-size: max(10px, 2.1cqmin); letter-spacing: .08em; text-transform: uppercase; color: var(--grey); }
+.num { font-size: min(19cqh, 24cqw); line-height: 1; letter-spacing: -.06em; margin-top: .8cqh; height: 1em; }
+.num small { font-size: .2em; letter-spacing: 0; color: var(--grey); margin-left: .3em; }
+.num .wait { color: var(--rule); }
+
+/* ruler: fixed scale, no moving hand */
+.ruler { position: relative; margin-top: 4cqh; height: 5.5cqh; min-height: 22px;
+  background:
+    repeating-linear-gradient(90deg, var(--ink) 0 1px, transparent 1px 10%) top left / 100% 100% no-repeat,
+    repeating-linear-gradient(90deg, var(--rule) 0 1px, transparent 1px 1%) top left / 100% 45% no-repeat;
+  border-top: 1px solid var(--ink); }
+.ruler::after { content: ""; position: absolute; right: 0; top: 0; width: 1px; height: 100%; background: var(--ink); }
+.scale { display: flex; justify-content: space-between; margin: .8cqh -.4em 0; font-size: max(9px, 1.7cqmin); color: var(--grey); }
+.ruler .mk { position: absolute; top: -1.6cqmin; bottom: -1.6cqmin; width: 2px; margin-left: -1px; }
+.ruler .mk.t { background: var(--accent); }
+.ruler .mk.t::before { content: ""; position: absolute; top: -1.6cqmin; left: -1.2cqmin; border: 1.2cqmin solid transparent; border-top-color: var(--accent); }
+.ruler .mk.r { background: var(--ink); opacity: 0; }
+.ruler .mk.r::after { content: ""; position: absolute; bottom: -1.6cqmin; left: -1.2cqmin; border: 1.2cqmin solid transparent; border-bottom-color: var(--ink); }
+.ruler .sp { position: absolute; top: 0; bottom: 0; background: repeating-linear-gradient(135deg, rgba(43,68,214,.35) 0 2px, transparent 2px 5px); opacity: 0; }
+
+/* data rows */
+.rows { margin-top: auto; border-top: 1px solid var(--rule); font-size: max(11px, 2.3cqmin); }
+.row { display: flex; justify-content: space-between; padding: 1.3cqh 0; border-bottom: 1px solid var(--rule); }
+.row span:first-child { color: var(--grey); letter-spacing: .06em; text-transform: uppercase; }
+.row b { font-weight: 500; }
+.row b.ac { color: var(--accent); }
+.go { margin-top: 2.6cqh; width: 100%; padding: 2.4cqh 0; background: var(--ink); color: var(--paper); border-radius: 2px;
+  font-size: max(12px, 2.4cqmin); letter-spacing: .14em; text-transform: uppercase; transition: background .2s; }
+.go:active { background: #000; }
+.go .s2, .go .s3 { display: none; }
+
+/* states */
+.g .run-only, .g .r-only { display: none; }
+.g[data-state="running"] .ready-only, .g[data-state="result"] .ready-only { display: none; }
+.g[data-state="running"] .run-only { display: inline; }
+.g[data-state="running"] .row.run-only, .g[data-state="result"] .row.r-only { display: flex; }
+.g[data-state="running"] .row.ready-only { display: none; }
+.g[data-state="running"] .go { background: var(--accent); }
+.g[data-state="running"] .go .s1 { display: none; }
+.g[data-state="running"] .go .s2 { display: inline; }
+.g[data-state="result"] .r-only { display: inline; }
+.g[data-state="result"] .go .s1 { display: none; }
+.g[data-state="result"] .go .s3 { display: inline; }
+.g[data-state="result"] .mk.r, .g[data-state="result"] .sp { opacity: 1; transition: opacity .4s; }
+.g[data-state="result"] .num { animation: type .45s steps(4); }
+@keyframes type { from { clip-path: inset(0 100% 0 0); } }
+</style>
+</head>
+<body>
+<header class="bd-head">
+  <div class="bd-title">Chronomètre · Planche v1 · Page « Jeu »<b>03 — Instrument</b></div>
+  <div class="bd-states"><span>State</span>
+    <button data-state="ready">Ready</button><button data-state="running">Measuring</button><button data-state="result">Result</button>
+    <span style="margin-left:14px">or play it: Start, count, Stop</span></div>
+</header>
+
+<section class="bd-stage">
+  <figure class="bd-fig"><div class="bd-scale desk" data-mount="d"></div><figcaption>Desktop feed · 1440 × 900</figcaption></figure>
+  <figure class="bd-fig"><div class="bd-scale mob" data-mount="m"></div><figcaption>Mobile post · 390 × 844</figcaption></figure>
+</section>
+
+<section class="bd-notes">
+  <div><h3>Idea</h3><p>A measurement sheet from a lab drawer. Paper, ink, a printed ruler that never moves, and the result logged in rows. Very legible, very "data", and the rows already prepare the community comparison of the end card.</p></div>
+  <div><h3>Palette — one accent</h3><div class="sw">
+    <i style="background:#ebe6da">ebe6da</i><i style="background:#1d2230;color:#ebe6da">1d2230</i>
+    <i style="background:#7a776f;color:#fff">7a776f</i><i style="background:#2b44d6;color:#fff">2b44d6</i></div></div>
+  <div><h3>Type</h3><p style="font:400 44px/1 ui-monospace,Menlo,Consolas,monospace;letter-spacing:-.06em">07.30<span style="font-size:12px;letter-spacing:0;color:#7a776f"> s</span></p>
+    <p style="margin-top:10px">Monospace only, one weight, tabular by nature. Caps with +8 % tracking for labels. System stack.</p></div>
+</section>
+
+<section class="bd-states-row">
+  <h2>The three states of the main page (mobile)</h2>
+  <div class="bd-row">
+    <figure class="bd-fig"><div class="bd-scale mob" data-mount="m" data-lock="ready"></div><figcaption>1 · Ready</figcaption></figure>
+    <figure class="bd-fig"><div class="bd-scale mob" data-mount="m" data-lock="running"></div><figcaption>2 · Measuring — no clock</figcaption></figure>
+    <figure class="bd-fig"><div class="bd-scale mob" data-mount="m" data-lock="result"></div><figcaption>3 · Result</figcaption></figure>
+  </div>
+</section>
+
+<template id="game">
+  <div class="g">
+    <div class="hd"><span>Chronomètre</span><span>Sheet <span data-k="n"></span></span><span data-k="sheet"></span></div>
+    <div class="lab"><span class="ready-only">Target interval</span><span class="run-only">Measuring · no clock</span><span class="r-only">Your interval</span></div>
+    <div class="num"><span class="ready-only" data-k="target-pad"></span><span class="run-only wait">--.--</span><span class="r-only" data-k="result-pad"></span><small>s</small></div>
+    <div class="ruler">
+      <span class="sp" data-span></span>
+      <span class="mk t" data-mark="target"></span>
+      <span class="mk r" data-mark="result"></span>
+    </div>
+    <div class="scale"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div>
+    <div class="rows">
+      <div class="row ready-only"><span>Rule</span><b>Start · count · stop on target</b></div>
+      <div class="row ready-only"><span>Measured today</span><b data-k="players"></b></div>
+      <div class="row run-only"><span>Target</span><b class="ac"><span data-k="target-pad"></span> s</b></div>
+      <div class="row run-only"><span>Status</span><b>Counting…</b></div>
+      <div class="row r-only"><span>Deviation</span><b class="ac"><span data-k="gap-signed"></span> s</b></div>
+      <div class="row r-only"><span>Closer than</span><b><span data-k="closer"></span> of <span data-k="players"></span></b></div>
+    </div>
+    <button class="go" data-go><span class="s1">Start measurement</span><span class="s2">Stop</span><span class="s3">View result card</span></button>
+  </div>
+</template>
+<script src="board.js"></script>
+</body>
+</html>

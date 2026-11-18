@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Chronomètre — v2 · 03 Carte de fin</title>
+<link rel="stylesheet" href="font-riso.css">
+<link rel="stylesheet" href="board.css">
+<link rel="stylesheet" href="riso.css">
+<style>
+/* Page « Carte de fin »: the official result ticket — the shareable end of the daily loop. */
+.left { position: absolute; left: 30px; top: 90px; width: 370px; }
+.left .pnum { margin-top: 6px; }
+.tgt { margin-top: 8px; }
+.left .stamp { margin-top: 14px; }
+.quote { margin-top: 22px; padding-top: 12px; border-top: 2px solid var(--blue); }
+.quote q { display: block; margin-top: 6px; font-size: 19px; font-weight: 800; letter-spacing: .01em; line-height: 1.2;
+  color: var(--pink); mix-blend-mode: multiply; quotes: "“" "”"; }
+.rcol { position: absolute; left: 430px; right: 30px; top: 90px; }
+.blk { padding: 10px 0 14px; border-bottom: 2px solid var(--blue); }
+.blk + .blk { margin-top: 10px; }
+.row { display: flex; align-items: baseline; gap: 12px; margin-top: 4px; }
+.tally { display: flex; gap: 5px; margin-top: 10px; }
+.tally i { width: 15px; height: 15px; --dot: 3.2px; }
+.tally i.pkd { background: var(--pink); filter: url(#rs-ink); }
+.tally i.miss { background: none; box-shadow: inset 0 0 0 1.5px var(--blue); }
+</style>
+</head>
+<body>
+<header class="bd-head">
+  <div class="bd-title">Chronomètre · v2 · Riso<b>03 — Carte de fin</b></div>
+  <div class="bd-states"><em>Page « Carte de fin » · opened by the CARD sticker after the stop</em></div>
+</header>
+<section class="bd-stage"><div class="bd-scale" data-mount="d" data-lock="result"></div></section>
+
+<section class="bd-notes" style="padding-top:64px">
+  <div><h3>Role</h3>
+    <p><b>The official result ticket of the heat.</b> Your time printed big, the gap stamped, your streak counted in printed squares, where you sit in today's field — and the one action: comment your time.</p>
+    <p>The comment line is pre-written and printed on the card, so posting takes one tap and every comment in the thread reads the same way: time, heat, gap. That is what makes the thread fun to scroll.</p></div>
+  <div><h3>Style — strict continuity</h3>
+    <p>Same masthead and stub. Pink = you (time, stamp, streak, quote), blue = the race (target, rules, field). Streak squares are halftone tiles; one empty outlined tile = a missed day. The sticker changes job: <b>COMMENT</b>.</p></div>
+  <div><h3>Demo data</h3>
+    <p>Heat Nº041, target 7.30 s, you 7.12 s, streak 12 days (one missed day 13 days ago), 3,214 runners, median 6.84 s, next heat 07:42:10. All placeholders until the build.</p></div>
+</section>
+
+<template id="game">
+  <div class="g" data-scale="10">
+    <div class="fibre"></div>
+    <svg class="scene" viewBox="0 0 740 512" aria-hidden="true">
+      <g class="disc ink" fill="#ff48b0" data-cx="676" data-cy="430" data-r="96" opacity=".9"></g>
+      <g class="ink" fill="none" stroke="#0078bf" stroke-width="2.5" transform="translate(-6 4)"><circle cx="676" cy="430" r="110"/></g>
+    </svg>
+    <div class="head"><b>CHRONOMÈTRE</b><span>HEAT Nº<span data-k="n"></span> · RESULT CARD</span><i data-k="date"></i></div>
+
+    <div class="left">
+      <div class="lead">OFFICIAL TIME</div>
+      <div class="pnum"><span class="b" data-k="result"></span><span class="p" data-k="result"></span></div>
+      <div class="lbl tgt">TARGET <span data-k="target"></span> S · MEDIAN <span data-k="median"></span> S</div>
+      <span class="stamp"><span data-k="gap"></span> S <span data-k="gap-word" style="text-transform:uppercase"></span></span>
+      <div class="quote"><div class="small">YOUR LINE FOR THE COMMENTS</div>
+        <q><span data-k="result"></span> on heat Nº<span data-k="n"></span> — <span data-k="gap"></span> s <span data-k="gap-word"></span>.</q></div>
+    </div>
+
+    <div class="rcol">
+      <div class="blk"><div class="lbl">STREAK</div>
+        <div class="row"><span class="stat pk">12</span><span class="lbl pk">DAYS IN A ROW</span></div>
+        <div class="tally"><i class="ht miss"></i><i class="ht pkd"></i><i class="ht pkd"></i><i class="ht pkd"></i><i class="ht pkd"></i><i class="ht pkd"></i><i class="ht pkd"></i><i class="ht pkd"></i><i class="ht pkd"></i><i class="ht pkd"></i><i class="ht pkd"></i><i class="ht pkd"></i><i class="ht pkd"></i></div>
+      </div>
+      <div class="blk"><div class="lbl">TODAY'S FIELD</div>
+        <div class="row"><span class="stat" data-k="closer"></span><span class="lbl">OF <span data-k="players"></span> RUNNERS<br>STOPPED FURTHER OFF</span></div>
+      </div>
+    </div>
+
+    <div class="stub"><span>NEXT HEAT IN</span><span style="font-size:15px;letter-spacing:.1em">07:42:10</span><span><em>STANDINGS →</em></span></div>
+    <button class="go" data-go>COMMENT<small>YOUR <span data-k="result"></span></small></button>
+  </div>
+</template>
+<script src="riso.js"></script>
+<script src="board.js"></script>
+</body>
+</html>

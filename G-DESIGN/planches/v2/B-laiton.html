@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Chronomètre — v2 · B Laiton</title>
+<link rel="stylesheet" href="font-brass.css">
+<link rel="stylesheet" href="board.css">
+<style>
+/* ===== B · Laiton — a decimal stopwatch with its hands removed, on jeweller's felt ===== */
+.g { position: absolute; inset: 0; overflow: hidden; user-select: none; background: #1f3a2e; color: #2a2420;
+  font-family: "Brass Mono", "Liberation Mono", monospace; font-variant-numeric: lining-nums tabular-nums; }
+.g svg.scene { position: absolute; inset: 0; width: 740px; height: 512px; display: block; }
+.rot { transform-box: view-box; transform-origin: 270px 272px; }
+.target { transform: rotate(calc(var(--t) * 360deg)); }
+.hand { transform: rotate(0deg); opacity: 0; transition: opacity .2s; }
+.g[data-state="result"] .hand { opacity: 1; transform: rotate(calc(var(--r) * 360deg)); transition: transform 1.5s cubic-bezier(.3,1.35,.5,1), opacity .2s; }
+.crown { transition: transform .12s; }
+.g[data-state="running"] .crown { transform: translateY(7px); }
+.glow { opacity: 0; transition: opacity .8s; }
+.g[data-state="ready"] .glow { opacity: 1; animation: breathe 2.6s ease-in-out infinite; }
+@keyframes breathe { 50% { opacity: .35; } }
+.dim { opacity: 0; transition: opacity 1s; }
+.g[data-state="running"] .dim { opacity: .45; }
+
+/* hit areas: the crown and the whole watch */
+.hit { position: absolute; border-radius: 50%; }
+.hit.crown-hit { left: 232px; top: 26px; width: 76px; height: 86px; }
+.hit.watch-hit { left: 100px; top: 102px; width: 340px; height: 340px; }
+
+/* the paper tag */
+.tag-wrap { position: absolute; left: 478px; top: 112px; width: 214px; height: 316px; transform: rotate(4deg); transform-origin: 107px 20px;
+  filter: drop-shadow(0 14px 14px rgba(0,0,0,.45)); transition: transform .6s cubic-bezier(.3,1.3,.5,1); }
+.tag { position: absolute; inset: 0;
+  background:
+    radial-gradient(120% 80% at 30% 10%, rgba(255,255,255,.35), transparent 60%),
+    repeating-linear-gradient(8deg, rgba(120,100,60,.05) 0 1px, transparent 1px 3px), #eee4cb;
+  clip-path: polygon(22px 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 0 100%, 0 22px);
+  padding: 44px 20px 16px; }
+.tag::before { content: ""; position: absolute; left: 50%; top: 12px; width: 18px; height: 18px; margin-left: -9px; border-radius: 50%;
+  background: #1f3a2e; box-shadow: 0 0 0 5px #c8b685, 0 0 0 6px rgba(0,0,0,.15); }
+.g[data-state="running"] .tag-wrap { transform: rotate(-2deg) translateY(4px); }
+.t-line { font-size: 11px; letter-spacing: .06em; color: #5e5546; }
+.t-cap { font-size: 12px; letter-spacing: .22em; text-transform: uppercase; color: #2a2420; margin-top: 16px; }
+.t-num { font-family: "Brass Serif", Georgia, serif; font-weight: 700; font-size: 74px; line-height: .95; letter-spacing: -.02em; margin-top: 4px; }
+.t-num small { font-family: "Brass Mono", monospace; font-weight: 400; font-size: 12px; letter-spacing: .1em; margin-left: 4px; color: #5e5546; }
+.t-rule { border-top: 1px dashed rgba(42,36,32,.35); margin: 14px 0 10px; }
+.t-small { font-size: 11.5px; line-height: 1.5; color: #3b342b; }
+.stamp { display: inline-block; margin-top: 10px; padding: 5px 9px 3px; border: 2px solid #b8322a; color: #b8322a; transform: rotate(-7deg);
+  font-family: "Brass Serif", Georgia, serif; font-weight: 700; font-size: 17px; letter-spacing: .08em; text-transform: uppercase;
+  filter: url(#br-ink); opacity: .92; }
+.back { position: absolute; inset: 44px 20px 16px; display: none; flex-direction: column; justify-content: center; text-align: center; gap: 14px; }
+.back .t-num { font-size: 40px; color: rgba(42,36,32,.18); }
+.g[data-state="running"] .front { visibility: hidden; }
+.g[data-state="running"] .back { display: flex; }
+
+.g .res, .g .run { display: none; }
+.g[data-state="result"] .rdy { display: none; }
+.g[data-state="result"] .res { display: inline; }
+.g[data-state="result"] div.res { display: block; }
+.g[data-state="result"] .stamp.res { display: inline-block; }
+</style>
+</head>
+<body>
+<header class="bd-head">
+  <div class="bd-title">Chronomètre · v2 · « Jeu »<b>B — Laiton</b></div>
+  <div class="bd-states"><button data-state="ready">Ready</button><button data-state="running">Measuring</button><button data-state="result">Result</button>
+    <em>or play: press the crown, count, press it again</em></div>
+</header>
+<section class="bd-stage"><div class="bd-scale" data-mount="d"></div></section>
+
+<section class="bd-sec"><h2>The three states</h2>
+  <div class="bd-row">
+    <figure><div class="bd-mini" data-mount="s" data-lock="ready"></div><figcaption>1 · Ready — red mark on the rim, target on the tag</figcaption></figure>
+    <figure><div class="bd-mini" data-mount="s" data-lock="running"></div><figcaption>2 · Measuring — crown pressed, tag turned over, a dial with no hands</figcaption></figure>
+    <figure><div class="bd-mini" data-mount="s" data-lock="result"></div><figcaption>3 · Result — one red hand swings to your second, the tag is stamped</figcaption></figure>
+  </div>
+</section>
+<section class="bd-notes">
+  <div><h3>World</h3>
+    <p><b>A stopwatch someone took the hands out of.</b> It sits on a jeweller's green felt with a paper tag tied to the crown. You press the real crown to start, press it again to stop — and only then does a single red hand swing in to show where your second fell against the red mark.</p>
+    <p>An object you want to touch: brass, enamel, glass, paper, ink. Every day a new tag.</p></div>
+  <div><h3>Matter &amp; colour</h3><div class="sw">
+    <i style="background:#1f3a2e;color:#eee4cb">1f3a2e felt</i><i style="background:#d9b25a">d9b25a brass</i><i style="background:#8e6a22;color:#fff">8e6a22</i>
+    <i style="background:#f6efdc">f6efdc enamel</i><i style="background:#eee4cb">eee4cb tag</i><i style="background:#b8322a;color:#fff">b8322a lacquer</i></div>
+    <p style="margin-top:12px">Felt grain, brushed brass bevels, enamel, a glass highlight, ink that bleeds. One red for everything that means "the second".</p></div>
+  <div><h3>Type</h3>
+    <p style="font:700 54px/1 'Brass Serif',serif;color:#eee4cb">7.30 <span style="font:400 13px 'Brass Mono',monospace;letter-spacing:.2em">STOP AT</span></p>
+    <p>C059 (Century-style serif, URW, font exception) for dial and tag numbers; Nimbus Mono for the typewritten tag. Embedded, subset.</p></div>
+</section>
+
+<template id="game">
+  <div class="g" data-scale="10">
+    <svg class="scene" viewBox="0 0 740 512" aria-hidden="true">
+      <defs>
+        <filter id="br-felt" x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="3" seed="3"/>
+          <feColorMatrix values="0 0 0 0 .7  0 0 0 0 .85  0 0 0 0 .75  0 0 0 .6 -.22"/>
+        </filter>
+        <filter id="br-shadow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="16"/></filter>
+        <filter id="br-ink"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="9"/>
+          <feDisplacementMap in="SourceGraphic" scale="2.4"/></filter>
+        <radialGradient id="br-vig" cx="38%" cy="42%" r="75%"><stop offset="0" stop-color="#2c5141" stop-opacity="0"/><stop offset="1" stop-color="#08140f" stop-opacity=".85"/></radialGradient>
+        <linearGradient id="br-brass" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#fbe7a1"/><stop offset=".22" stop-color="#d9b25a"/><stop offset=".48" stop-color="#8e6a22"/>
+          <stop offset=".7" stop-color="#e3c070"/><stop offset="1" stop-color="#5e4313"/></linearGradient>
+        <linearGradient id="br-brass2" x1="1" y1="1" x2="0" y2="0">
+          <stop offset="0" stop-color="#f3d78a"/><stop offset=".5" stop-color="#9a7428"/><stop offset="1" stop-color="#6a4c16"/></linearGradient>
+        <radialGradient id="br-enamel" cx="45%" cy="40%" r="62%"><stop offset="0" stop-color="#fbf7ec"/><stop offset=".8" stop-color="#efe5cb"/><stop offset="1" stop-color="#d8c8a2"/></radialGradient>
+        <radialGradient id="br-glass" cx="30%" cy="22%" r="60%"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".5" stop-color="#fff" stop-opacity=".06"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      </defs>
+      <!-- felt -->
+      <rect width="740" height="512" fill="#1f3a2e"/>
+      <rect width="740" height="512" filter="url(#br-felt)" style="mix-blend-mode:soft-light"/>
+      <rect width="740" height="512" fill="url(#br-vig)"/>
+      <rect class="dim" width="740" height="512" fill="#050c08"/>
+      <!-- string from bow to tag -->
+      <path d="M270 30 C 360 -6, 520 60, 584 122" fill="none" stroke="#d6cbaf" stroke-width="2.2" stroke-linecap="round"/>
+      <!-- shadow -->
+      <circle cx="292" cy="300" r="172" fill="#030a06" opacity=".75" filter="url(#br-shadow)"/>
+      <!-- bow + crown -->
+      <circle cx="270" cy="44" r="22" fill="none" stroke="url(#br-brass)" stroke-width="8"/>
+      <circle class="glow" cx="270" cy="80" r="38" fill="none" stroke="#f3d78a" stroke-width="1.2" stroke-dasharray="2 5"/>
+      <g class="crown">
+        <rect x="256" y="66" width="28" height="44" rx="4" fill="url(#br-brass)"/>
+        <g stroke="#6a4c16" stroke-width="1.2" opacity=".7"><path d="M261 70v36M266 70v36M271 70v36M276 70v36M281 70v36"/></g>
+        <rect x="250" y="60" width="40" height="13" rx="5" fill="url(#br-brass2)"/>
+      </g>
+      <!-- case -->
+      <circle cx="270" cy="272" r="170" fill="url(#br-brass)"/>
+      <circle cx="270" cy="272" r="159" fill="url(#br-brass2)"/>
+      <circle cx="270" cy="272" r="150" fill="#5e4313"/>
+      <circle cx="270" cy="272" r="147" fill="url(#br-enamel)"/>
+      <!-- dial printing -->
+      <g class="ticks"></g>
+      <text x="270" y="206" text-anchor="middle" font-family="Brass Serif, serif" font-size="13" letter-spacing="3.5" fill="#2a2420">CHRONOMÈTRE</text>
+      <text x="270" y="221" text-anchor="middle" font-family="Brass Mono, monospace" font-size="8.5" letter-spacing="2" fill="#6b604e">1/10 SECOND</text>
+      <text x="270" y="297" text-anchor="middle" font-family="Brass Mono, monospace" font-size="7.5" letter-spacing="1.6" fill="#8a7d66">HANDS REMOVED</text>
+      <circle cx="270" cy="332" r="28" fill="none" stroke="#2a2420" stroke-width=".8" opacity=".55"/>
+      <circle cx="270" cy="332" r="2" fill="#2a2420" opacity=".55"/>
+      <text x="270" y="318" text-anchor="middle" font-family="Brass Mono, monospace" font-size="7" fill="#6b604e">Nº</text>
+      <text x="270" y="351" text-anchor="middle" font-family="Brass Serif, serif" font-size="12" fill="#2a2420" data-k="n"></text>
+      <!-- target mark on the rim -->
+      <g class="rot target"><path d="M270 118 L263 104 L277 104 Z" fill="#b8322a"/><rect x="269" y="104" width="2" height="26" fill="#b8322a"/></g>
+      <!-- the hand, only after the stop -->
+      <g class="rot hand"><path d="M268.6 312 L270 134 L271.4 312 Z" fill="#b8322a"/><circle cx="270" cy="306" r="7" fill="none" stroke="#b8322a" stroke-width="2.4"/></g>
+      <circle cx="270" cy="272" r="7.5" fill="url(#br-brass)"/><circle cx="270" cy="272" r="2.6" fill="#3a2a0c"/>
+      <!-- glass -->
+      <circle cx="270" cy="272" r="147" fill="url(#br-glass)"/>
+      <path d="M160 200 A 128 128 0 0 1 250 136" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <button class="hit crown-hit" data-go aria-label="Press the crown"></button>
+    <button class="hit watch-hit" data-go aria-label="Press the stopwatch"></button>
+
+    <div class="tag-wrap"><div class="tag">
+      <div class="front">
+        <div class="t-line">Nº <span data-k="n"></span> — <span data-k="sheet"></span></div>
+        <div class="t-cap"><span class="rdy">Stop at</span><span class="res">You stopped at</span></div>
+        <div class="t-num"><span class="rdy" data-k="target"></span><span class="res" data-k="result"></span><small>s</small></div>
+        <span class="stamp res"><span data-k="gap"></span> s <span data-k="gap-word"></span></span>
+        <div class="t-rule"></div>
+        <div class="t-small rdy"><span data-k="players"></span> tried today.<br>One press each.<br>Press the crown to start.</div>
+        <div class="t-small res">Target <span data-k="target"></span> s<br>Closer than <span data-k="closer"></span><br>of today's <span data-k="players"></span>.</div>
+      </div>
+      <div class="back"><div class="t-num">· · ·</div><div class="t-small">Count in your head.<br>Press the crown again<br>on the second.</div></div>
+    </div></div>
+  </div>
+</template>
+<script>
+/* Prints the decimal dial (100 divisions, numerals 1..10) into the template once. */
+(function () {
+  var g = document.getElementById("game").content.querySelector(".ticks"), ns = "http://www.w3.org/2000/svg", i, a, el, len;
+  for (i = 0; i < 100; i++) {
+    a = i * 3.6; len = i % 10 === 0 ? 14 : (i % 5 === 0 ? 9 : 5);
+    el = document.createElementNS(ns, "rect");
+    el.setAttribute("x", i % 10 === 0 ? "269" : "269.6"); el.setAttribute("y", "130");
+    el.setAttribute("width", i % 10 === 0 ? "2" : ".8"); el.setAttribute("height", String(len));
+    el.setAttribute("fill", "#2a2420"); el.setAttribute("transform", "rotate(" + a + " 270 272)");
+    g.appendChild(el);
+  }
+  for (i = 1; i <= 10; i++) {
+    a = (i * 36 - 90) * Math.PI / 180;
+    el = document.createElementNS(ns, "text");
+    el.setAttribute("x", String(270 + 110 * Math.cos(a))); el.setAttribute("y", String(272 + 110 * Math.sin(a) + 7));
+    el.setAttribute("text-anchor", "middle"); el.setAttribute("font-family", "Brass Serif, serif"); el.setAttribute("font-size", "21");
+    el.setAttribute("fill", "#2a2420"); el.textContent = String(i);
+    g.appendChild(el);
+  }
+})();
+</script>
+<script src="board.js"></script>
+</body>
+</html>

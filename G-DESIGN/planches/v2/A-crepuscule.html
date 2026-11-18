@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Chronomètre — v2 · A Crépuscule</title>
+<link rel="stylesheet" href="font-dusk.css">
+<link rel="stylesheet" href="board.css">
+<style>
+/* ===== A · Crépuscule — the sun must touch the sea exactly on the second ===== */
+.g { position: absolute; inset: 0; overflow: hidden; user-select: none; color: #fff0d8;
+  font-family: "Ubuntu Sans X", "Liberation Sans", sans-serif; font-variant-numeric: lining-nums tabular-nums; }
+.g svg.scene rect:not([rx]) { shape-rendering: crispEdges; }
+.g svg.scene { position: absolute; inset: 0; width: 740px; height: 512px; display: block; }
+.sun { transform: translateY(-78px); transition: transform 1.6s cubic-bezier(.22,.9,.25,1); }
+.g[data-state="result"] .sun { transform: translateY(calc(var(--gap) * 90px)); }
+.shine { transition: opacity .8s; }
+.night { opacity: 0; transition: opacity 1.2s ease; }
+.stars { opacity: 0; transition: opacity 1.8s ease .3s; }
+.g[data-state="running"] .night { opacity: .8; }
+.g[data-state="running"] .stars { opacity: 1; }
+.g[data-state="running"] .sun, .g[data-state="running"] .shine { opacity: 0; transition: opacity .9s, transform 0s 1s; }
+
+.top { position: absolute; left: 34px; top: 26px; right: 34px; display: flex; justify-content: space-between;
+  font-size: 11px; font-weight: 650; font-stretch: 82%; letter-spacing: .2em; text-transform: uppercase; color: rgba(255,222,186,.82); }
+.copy { position: absolute; left: 34px; top: 64px; transition: opacity .7s; }
+.kick { font-family: "Dusk Display", Georgia, serif; font-style: italic; font-size: 24px; line-height: 1.12; color: #ffd9b4; }
+.num { font-family: "Dusk Display", Georgia, serif; font-style: italic; font-size: 132px; line-height: .95; letter-spacing: -.025em;
+  color: #fff3df; margin-top: 4px; text-shadow: 0 2px 0 rgba(43,35,80,.25); }
+.num small { font-family: "Ubuntu Sans X", sans-serif; font-style: normal; font-size: 12px; font-weight: 650; font-stretch: 82%;
+  letter-spacing: .2em; text-transform: uppercase; color: #ffd9b4; margin-left: 10px; vertical-align: 14px; }
+.verdict { font-family: "Dusk Display", Georgia, serif; font-style: italic; font-size: 22px; color: #ffe2b0; margin-top: 6px; }
+.verdict b { font-weight: 400; color: #fff3df; }
+.closer { font-size: 12px; font-weight: 500; letter-spacing: .02em; color: #f1c6ad; margin-top: 6px; }
+.eyes { position: absolute; left: 0; right: 0; top: 180px; text-align: center; font-family: "Dusk Display", Georgia, serif;
+  font-style: italic; font-size: 30px; color: #ffe2b0; opacity: 0; transition: opacity 1.2s .4s; }
+.eyes small { display: block; font-family: "Ubuntu Sans X", sans-serif; font-style: normal; font-size: 11px; font-weight: 650;
+  font-stretch: 82%; letter-spacing: .2em; text-transform: uppercase; color: rgba(255,222,186,.6); margin-top: 12px; }
+.g[data-state="running"] .eyes { opacity: 1; }
+.g[data-state="running"] .copy { opacity: 0; }
+.foot { position: absolute; left: 34px; bottom: 24px; font-size: 12px; color: #d9b3a6; }
+.go { position: absolute; right: 34px; bottom: 26px; height: 46px; padding: 0 22px 0 18px; border-radius: 999px;
+  background: #ffe2b0; color: #2b2350; display: flex; align-items: center; gap: 10px;
+  font-size: 13px; font-weight: 750; font-stretch: 85%; letter-spacing: .16em; text-transform: uppercase;
+  box-shadow: 0 0 0 6px rgba(255,226,176,.14), 0 10px 24px -10px rgba(20,10,40,.7); transition: transform .15s, background .4s; }
+.go::before { content: ""; width: 14px; height: 14px; border-radius: 50%; background: #f08a6c; box-shadow: inset 0 -5px 0 #2b2350; }
+.go:active { transform: scale(.97); }
+.g[data-state="running"] .go { background: #2b2350; color: #ffe2b0; box-shadow: 0 0 0 1px rgba(255,226,176,.5); }
+.g[data-state="running"] .go::before { background: #ffe2b0; box-shadow: none; }
+
+.g .run, .g .res, .g .res-early, .g .res-late, .g .res-on { display: none; }
+.g[data-state="running"] .rdy { display: none; }
+.g[data-state="running"] .run { display: inline; }
+.g[data-state="result"] .rdy { display: none; }
+.g[data-state="result"] .res { display: inline; }
+.g[data-state="result"] div.res { display: block; }
+.g[data-side="early"] .res-early, .g[data-side="late"] .res-late, .g[data-side="on"] .res-on { display: inline; }
+</style>
+</head>
+<body>
+<header class="bd-head">
+  <div class="bd-title">Chronomètre · v2 · « Jeu »<b>A — Crépuscule</b></div>
+  <div class="bd-states"><button data-state="ready">Ready</button><button data-state="running">Measuring</button><button data-state="result">Result</button>
+    <em>or play: Start, close your eyes, stop on the second</em></div>
+</header>
+<section class="bd-stage"><div class="bd-scale" data-mount="d"></div></section>
+
+<section class="bd-sec"><h2>The three states</h2>
+  <div class="bd-row">
+    <figure><div class="bd-mini" data-mount="s" data-lock="ready"></div><figcaption>1 · Ready — the sun hangs, the target is written in the sky</figcaption></figure>
+    <figure><div class="bd-mini" data-mount="s" data-lock="running"></div><figcaption>2 · Measuring — night falls, the sun is gone: no clock</figcaption></figure>
+    <figure><div class="bd-mini" data-mount="s" data-lock="result"></div><figcaption>3 · Result — the sun lands where you stopped</figcaption></figure>
+  </div>
+</section>
+<section class="bd-notes">
+  <div><h3>World</h3>
+    <p><b>Every day is one sunset.</b> The target second is the instant the sun touches the sea. You start, night falls, you stop when you feel it — and the sun comes back exactly where your second put it: still hanging (early) or already half-drowned (late).</p>
+    <p>The gap is not a number first, it is a picture people will describe in the comments.</p></div>
+  <div><h3>Matter &amp; colour — one dusk ramp</h3><div class="sw">
+    <i style="background:#2b2350;color:#ffe2b0">2b2350</i><i style="background:#553c78;color:#ffe2b0">553c78</i><i style="background:#a96388;color:#fff">a96388</i>
+    <i style="background:#f2a57e">f2a57e</i><i style="background:#ffe2b0">ffe2b0</i><i style="background:#1d1433;color:#ffe2b0">1d1433</i></div>
+    <p style="margin-top:12px">Posterised flat planes, depth by atmosphere (far = lighter), printed grain on top. One hue family, no gradients.</p></div>
+  <div><h3>Type</h3>
+    <p style="font:italic 400 54px/1 'Dusk Display',serif;color:#fff0d8">7.30</p>
+    <p>Noto Serif Display Italic (OFL) for the number and the voice; Ubuntu Sans condensed caps for labels. Embedded, subset.</p></div>
+</section>
+
+<template id="game">
+  <div class="g" data-scale="10">
+    <svg class="scene" viewBox="0 0 740 512" aria-hidden="true">
+      <defs>
+        <clipPath id="dk-above"><rect x="0" y="0" width="740" height="322"/></clipPath>
+        <filter id="dk-grain" x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7"/>
+          <feColorMatrix values="0 0 0 0 1  0 0 0 0 .92  0 0 0 0 .8  0 0 0 .55 -.18"/>
+        </filter>
+      </defs>
+      <!-- sky, posterised -->
+      <rect width="740" height="322" fill="#7c4f88"/><rect y="320" width="740" height="192" fill="#48316a"/>
+      <rect width="740" height="70" fill="#2b2350"/><rect y="70" width="740" height="60" fill="#3b2d63"/>
+      <rect y="130" width="740" height="50" fill="#553c78"/><rect y="180" width="740" height="42" fill="#7c4f88"/>
+      <rect y="222" width="740" height="36" fill="#a96388"/><rect y="258" width="740" height="32" fill="#d47f80"/>
+      <rect y="290" width="740" height="32" fill="#f2a57e"/>
+      <!-- sun + flat halo -->
+      <g clip-path="url(#dk-above)"><g class="sun">
+        <circle cx="540" cy="278" r="92" fill="#f8b98a" opacity=".22"/>
+        <circle cx="540" cy="278" r="66" fill="#fcc995" opacity=".35"/>
+        <circle cx="540" cy="278" r="44" fill="#ffe7bd"/>
+      </g></g>
+      <!-- far ridges -->
+      <path d="M0 322 L0 236 L40 228 L78 244 L120 214 L168 238 L210 226 L262 262 L318 284 L360 322 Z" fill="#b9708a"/>
+      <path d="M620 322 L652 280 L688 292 L740 262 L740 322 Z" fill="#b9708a"/>
+      <path d="M0 322 L0 264 L52 252 L96 276 L150 262 L214 300 L250 322 Z" fill="#7f4c80"/>
+      <!-- sea -->
+      <rect y="322" width="740" height="18" fill="#c06f80"/><rect y="340" width="740" height="26" fill="#8d5584"/>
+      <rect y="366" width="740" height="36" fill="#64417a"/><rect y="402" width="740" height="50" fill="#48316a"/>
+      <rect y="452" width="740" height="60" fill="#33245a"/>
+      <g class="shine" fill="#ffd9a6">
+        <rect x="490" y="328" width="100" height="3" rx="1.5" opacity=".9"/><rect x="502" y="337" width="74" height="3" rx="1.5" opacity=".75"/>
+        <rect x="512" y="348" width="58" height="3" rx="1.5" opacity=".6"/><rect x="520" y="362" width="40" height="3" rx="1.5" opacity=".45"/>
+        <rect x="528" y="380" width="26" height="3" rx="1.5" opacity=".32"/><rect x="534" y="402" width="14" height="3" rx="1.5" opacity=".2"/>
+      </g>
+      <!-- near rocks + dune with grass -->
+      <path d="M0 322 L0 300 L36 296 L70 322 Z" fill="#4a2f64"/>
+      <path d="M660 360 L690 330 L716 338 L740 320 L740 380 L650 380 Z" fill="#2f2050"/>
+      <path d="M0 512 L0 430 C70 414 140 424 210 448 C260 466 300 490 330 512 Z" fill="#1d1433"/>
+      <g stroke="#1d1433" stroke-width="2.4" stroke-linecap="round" fill="none">
+        <path d="M40 432 Q44 396 30 370"/><path d="M52 430 Q60 400 70 382"/><path d="M64 428 Q62 404 54 392"/>
+        <path d="M118 424 Q126 392 140 376"/><path d="M128 426 Q124 400 112 386"/><path d="M196 446 Q204 418 220 404"/>
+      </g>
+      <!-- night -->
+      <rect class="night" width="740" height="512" fill="#120b26"/>
+      <g class="stars" fill="#ffe9c4">
+        <circle cx="62" cy="48" r="1.4"/><circle cx="148" cy="92" r="1"/><circle cx="230" cy="40" r="1.6"/><circle cx="318" cy="120" r="1"/>
+        <circle cx="402" cy="62" r="1.3"/><circle cx="470" cy="150" r="1"/><circle cx="560" cy="34" r="1.5"/><circle cx="640" cy="96" r="1.1"/>
+        <circle cx="700" cy="168" r="1.4"/><circle cx="96" cy="196" r="1"/><circle cx="276" cy="214" r="1.2"/><circle cx="612" cy="232" r="1"/>
+        <circle cx="356" cy="28" r="1"/><circle cx="182" cy="150" r="1.2"/><circle cx="520" cy="96" r="1"/><circle cx="676" cy="40" r="1"/>
+      </g>
+      <rect width="740" height="512" filter="url(#dk-grain)" style="mix-blend-mode:soft-light"/>
+    </svg>
+
+    <div class="top"><span>Nº <span data-k="n"></span> · <span data-k="day"></span> dusk</span><span data-k="date"></span></div>
+    <div class="copy">
+      <div class="kick"><span class="rdy">Stop when the sun<br>touches the sea.</span><span class="res">You stopped at</span></div>
+      <div class="num"><span class="rdy" data-k="target"></span><span class="res" data-k="result"></span><small>seconds</small></div>
+      <div class="verdict res"><b data-k="gap"></b> s <span data-k="gap-word"></span> — <span class="res-early">the sun still hangs.</span><span class="res-late">the sun already sank.</span><span class="res-on">it kissed the sea.</span></div>
+      <div class="closer res">Closer than <span data-k="closer"></span> of today's <span data-k="players"></span> · target <span data-k="target"></span> s</div>
+    </div>
+    <div class="eyes">Close your eyes.<br>Stop on the second.<small>no clock tonight</small></div>
+    <div class="foot"><span class="rdy"><span data-k="players"></span> watched this sunset today · one try each</span><span class="res">Median today <span data-k="median"></span> s</span></div>
+    <button class="go" data-go><span class="rdy">Start</span><span class="run">Now</span><span class="res">Your card</span></button>
+  </div>
+</template>
+<script src="board.js"></script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Chronomètre — v1 · 02 Chambre noire</title>
+<link rel="stylesheet" href="board.css">
+<style>
+/* ===== Direction 02 · Chambre noire — darkness, one horizon line, press and hold, let go on the second ===== */
+.g {
+  --night: #0e0f11; --paper: #ebe7de; --grey: #6f6d68; --line: rgba(235,231,222,.28); --accent: #ffb238;
+  container-type: size; position: absolute; inset: 0; background: var(--night); color: var(--paper);
+  font-family: "Roboto Condensed", "Arial Narrow", "Helvetica Neue", -apple-system, "Segoe UI", Arial, sans-serif;
+  font-stretch: condensed; font-variant-numeric: tabular-nums; overflow: hidden; user-select: none;
+  transition: background .6s;
+}
+.g-top { position: absolute; top: 4.5cqh; left: 6cqw; right: 6cqw; display: flex; justify-content: space-between;
+  font-size: max(10px, 2.2cqmin); letter-spacing: .16em; text-transform: uppercase; color: var(--grey); }
+.big { position: absolute; left: 6cqw; right: 6cqw; top: 13cqh; transition: opacity .5s, transform .5s; }
+.kick { font-size: max(10px, 2.2cqmin); letter-spacing: .16em; text-transform: uppercase; color: var(--grey); }
+.kick em { font-style: normal; color: var(--accent); }
+.num { font-size: min(30cqh, 34cqw); font-weight: 700; line-height: .82; letter-spacing: -.035em; margin-top: 1.5cqh; }
+.num small { font-size: .2em; font-weight: 400; letter-spacing: .1em; color: var(--grey); margin-left: .3em; text-transform: uppercase; }
+.gapx { font-size: min(7cqh, 10cqw); font-weight: 700; color: var(--accent); letter-spacing: -.01em; }
+.meta { margin-top: 1.4cqh; font-size: max(11px, 2.5cqmin); color: var(--grey); letter-spacing: .02em; }
+
+/* the horizon */
+.hz { position: absolute; left: 6cqw; right: 6cqw; top: 66cqh; height: 1px; background: var(--line); }
+.hz .notch { position: absolute; top: -2.2cqmin; width: 2px; height: 4.4cqmin; margin-left: -1px; background: var(--accent); transition: opacity .5s; }
+.hz .dot { position: absolute; top: -.9cqmin; width: 1.8cqmin; height: 1.8cqmin; margin-left: -.9cqmin; border-radius: 50%;
+  background: var(--paper); box-shadow: 0 0 2.4cqmin rgba(255,178,56,.55); opacity: 0; }
+.hz .span { position: absolute; top: -1px; height: 3px; background: var(--accent); opacity: 0; }
+.hz .end { position: absolute; top: 1.8cqmin; font-size: max(9px, 1.8cqmin); letter-spacing: .12em; color: var(--grey); }
+
+/* the single control: hold */
+.hold { position: absolute; left: 50%; bottom: 7cqh; width: 18cqmin; height: 18cqmin; min-width: 72px; min-height: 72px;
+  transform: translateX(-50%); border-radius: 50%; background: var(--accent); color: var(--night);
+  font-size: max(12px, 2.6cqmin); font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  touch-action: none; transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .4s, background .3s, color .3s; }
+.hold .s2, .hold .s3 { display: none; }
+.hint { position: absolute; left: 0; right: 0; bottom: 2.6cqh; text-align: center; font-size: max(9px, 1.9cqmin);
+  letter-spacing: .12em; text-transform: uppercase; color: var(--grey); }
+
+/* states */
+.g .run-only, .g .r-only { display: none; }
+.g[data-state="running"] { background: #060708; }
+.g[data-state="running"] .big { opacity: 0; transform: translateY(-1cqh); }
+.g[data-state="running"] .hz .notch { opacity: .25; }
+.g[data-state="running"] .hold { transform: translateX(-50%) scale(.9); box-shadow: 0 0 0 3cqmin rgba(255,178,56,.08), 0 0 8cqmin rgba(255,178,56,.25); }
+.g[data-state="running"] .hold .s1 { display: none; }
+.g[data-state="running"] .hold .s2 { display: inline; }
+.g[data-state="running"] .ready-only { display: none; }
+.g[data-state="running"] .run-only { display: inline; }
+.g[data-state="result"] .ready-only { display: none; }
+.g[data-state="result"] .r-only { display: inline; }
+.g[data-state="result"] .r-only.blk { display: block; }
+.g[data-state="result"] .hz .dot, .g[data-state="result"] .hz .span { opacity: 1; transition: opacity .6s .2s; }
+.g[data-state="result"] .hold { background: transparent; color: var(--paper); box-shadow: inset 0 0 0 1px var(--line); }
+.g[data-state="result"] .hold .s1 { display: none; }
+.g[data-state="result"] .hold .s3 { display: inline; }
+.g[data-state="result"] .num { animation: dev .7s ease-out; }
+@keyframes dev { from { opacity: 0; filter: blur(8px); } }
+</style>
+</head>
+<body>
+<header class="bd-head">
+  <div class="bd-title">Chronomètre · Planche v1 · Page « Jeu »<b>02 — Chambre noire</b></div>
+  <div class="bd-states"><span>State</span>
+    <button data-state="ready">Ready</button><button data-state="running">Measuring</button><button data-state="result">Result</button>
+    <span style="margin-left:14px">or play it: press and hold, let go on the second</span></div>
+</header>
+
+<section class="bd-stage">
+  <figure class="bd-fig"><div class="bd-scale desk" data-mount="d"></div><figcaption>Desktop feed · 1440 × 900</figcaption></figure>
+  <figure class="bd-fig"><div class="bd-scale mob" data-mount="m"></div><figcaption>Mobile post · 390 × 844</figcaption></figure>
+</section>
+
+<section class="bd-notes">
+  <div><h3>Idea — the deviation</h3><p>A darkroom. The feed is bright, the post is a black hole that stops the scroll. One gesture with the body: press and hold, let go when you feel the second. When you hold, the screen goes darker; when you let go, your mark develops on the horizon like a print.</p></div>
+  <div><h3>Palette — one accent</h3><div class="sw">
+    <i style="background:#0e0f11;color:#ebe7de">0e0f11</i><i style="background:#ebe7de">ebe7de</i>
+    <i style="background:#6f6d68;color:#fff">6f6d68</i><i style="background:#ffb238">ffb238</i></div></div>
+  <div><h3>Type</h3><p style="font:700 44px/1 'Roboto Condensed','Arial Narrow',Arial,sans-serif;font-stretch:condensed;letter-spacing:-.035em;font-variant-numeric:tabular-nums">7.30 <span style="font-size:12px;font-weight:400;letter-spacing:.16em;color:#6f6d68">SECONDS</span></p>
+    <p style="margin-top:10px">Condensed bold for the number, wide-tracked caps for labels. System stack, no web font.</p></div>
+</section>
+
+<section class="bd-states-row">
+  <h2>The three states of the main page (mobile)</h2>
+  <div class="bd-row">
+    <figure class="bd-fig"><div class="bd-scale mob" data-mount="m" data-lock="ready"></div><figcaption>1 · Ready</figcaption></figure>
+    <figure class="bd-fig"><div class="bd-scale mob" data-mount="m" data-lock="running"></div><figcaption>2 · Holding — no clock</figcaption></figure>
+    <figure class="bd-fig"><div class="bd-scale mob" data-mount="m" data-lock="result"></div><figcaption>3 · Let go — result</figcaption></figure>
+  </div>
+</section>
+
+<template id="game">
+  <div class="g" data-gesture="hold">
+    <div class="g-top"><span>Measurement <span data-k="n"></span></span><span data-k="date"></span></div>
+    <div class="big">
+      <div class="kick"><span class="ready-only">Let go at exactly</span><span class="r-only">You let go at · target <em><span data-k="target"></span> s</em></span></div>
+      <div class="num"><span class="ready-only" data-k="target"></span><span class="r-only" data-k="result"></span><small>sec</small></div>
+      <div class="r-only blk gapx" data-k="gap"></div>
+      <div class="meta"><span class="ready-only"><span data-k="players"></span> people measured today. One try each.</span><span class="r-only">Closer than <span data-k="closer"></span> of today's <span data-k="players"></span>.</span></div>
+    </div>
+    <div class="hz">
+      <span class="span" data-span></span>
+      <span class="notch" data-mark="target"></span>
+      <span class="dot" data-mark="result"></span>
+      <span class="end" style="left:0">0</span><span class="end" style="right:0">10 S</span>
+    </div>
+    <button class="hold" data-go><span class="s1">Hold</span><span class="s2">Let go</span><span class="s3">Card</span></button>
+    <div class="hint"><span class="ready-only">Press and hold to start</span><span class="run-only">Count. Let go on the second.</span><span class="r-only">Median today <span data-k="median"></span> s</span></div>
+  </div>
+</template>
+<script src="board.js"></script>
+</body>
+</html>

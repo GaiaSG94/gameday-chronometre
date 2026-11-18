@@ -1,3 +1,3 @@
-# DESIGN - gameday-p20
+# DESIGN - gameday-chronometre
 
-> A completer (Claude, prompt 07-design).
+Journal de design : voir [`G-DESIGN/DESIGN.md`](G-DESIGN/DESIGN.md) (planches dans `G-DESIGN/planches/`).
